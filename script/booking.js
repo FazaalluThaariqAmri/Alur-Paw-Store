@@ -1,4 +1,4 @@
-/* ===== Booking Grooming — validasi (Orang 5) ===== */
+/* ===== Booking Grooming — validasi ===== */
 
 const BOOKING_MESSAGES = {
   ownerName: {
