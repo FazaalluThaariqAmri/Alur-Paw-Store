@@ -1,0 +1,77 @@
+<!-- ===== SECTION BOOKING (Orang 5) — tempel di dalam <main>, setelah section Grooming ===== -->
+<section id="booking" class="bg-white py-16 scroll-mt-20">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="mb-10">
+      <h2 class="font-heading font-bold text-2xl md:text-[32px] text-ink mb-2">Booking Grooming</h2>
+      <p class="text-ink/70">Isi formulir singkat ini untuk mengatur jadwal perawatan.</p>
+    </div>
+
+    <div class="grid gap-8 md:grid-cols-5">
+      <!-- Info jam buka -->
+      <aside class="md:col-span-2 bg-mint rounded-2xl p-6 h-fit">
+        <h3 class="font-heading font-semibold text-lg text-ink mb-3">Jam operasional</h3>
+        <dl class="space-y-2 text-ink">
+          <div class="flex justify-between gap-4"><dt>Senin–Sabtu</dt><dd class="font-semibold">09.00–20.00 WIB</dd></div>
+          <div class="flex justify-between gap-4"><dt>Minggu</dt><dd class="font-semibold">10.00–17.00 WIB</dd></div>
+        </dl>
+        <p class="mt-4 text-sm text-ink/70">Melayani grooming untuk kucing dan anjing. Hewan harus dalam kondisi sehat.</p>
+      </aside>
+
+      <!-- Form -->
+      <div class="md:col-span-3">
+        <!-- Pesan sukses -->
+        <div id="booking-success" role="status" aria-live="polite" tabindex="-1"
+             class="hidden mb-6 rounded-2xl border-2 border-teal bg-mint p-5 text-ink"></div>
+
+        <form id="booking-form" novalidate class="bg-cream rounded-2xl shadow-md p-6 space-y-5">
+          <!-- 1. Nama pemilik -->
+          <div>
+            <label for="ownerName" class="block font-semibold text-ink mb-1">Nama pemilik</label>
+            <input id="ownerName" name="ownerName" type="text" autocomplete="name" placeholder="Contoh: Rina Sari"
+                   aria-describedby="err-ownerName"
+                   class="w-full rounded-xl border-2 border-peach bg-white px-4 py-3 text-ink focus:outline-none focus:border-teal">
+            <p id="err-ownerName" class="field-error mt-1 text-sm text-red-700 min-h-[1.25rem]" role="alert"></p>
+          </div>
+
+          <!-- 2. Jenis hewan -->
+          <div>
+            <label for="petType" class="block font-semibold text-ink mb-1">Jenis hewan</label>
+            <select id="petType" name="petType" aria-describedby="err-petType"
+                    class="w-full rounded-xl border-2 border-peach bg-white px-4 py-3 text-ink focus:outline-none focus:border-teal">
+              <option value="">Pilih jenis hewan</option>
+              <option value="Kucing">Kucing</option>
+              <option value="Anjing">Anjing</option>
+            </select>
+            <p id="err-petType" class="field-error mt-1 text-sm text-red-700 min-h-[1.25rem]" role="alert"></p>
+          </div>
+
+          <!-- 3. Jenis layanan (sama dengan 3 paket Orang 4) -->
+          <div>
+            <label for="service" class="block font-semibold text-ink mb-1">Jenis layanan</label>
+            <select id="service" name="service" aria-describedby="err-service"
+                    class="w-full rounded-xl border-2 border-peach bg-white px-4 py-3 text-ink focus:outline-none focus:border-teal">
+              <option value="">Pilih paket grooming</option>
+              <option value="Basic Bath">Basic Bath – Rp 75.000</option>
+              <option value="Fresh & Care">Fresh &amp; Care – Rp 125.000</option>
+              <option value="Premium Spa">Premium Spa – Rp 200.000</option>
+            </select>
+            <p id="err-service" class="field-error mt-1 text-sm text-red-700 min-h-[1.25rem]" role="alert"></p>
+          </div>
+
+          <!-- 4. Tanggal -->
+          <div>
+            <label for="bookingDate" class="block font-semibold text-ink mb-1">Tanggal booking</label>
+            <input id="bookingDate" name="bookingDate" type="date" aria-describedby="err-bookingDate"
+                   class="w-full rounded-xl border-2 border-peach bg-white px-4 py-3 text-ink focus:outline-none focus:border-teal">
+            <p id="err-bookingDate" class="field-error mt-1 text-sm text-red-700 min-h-[1.25rem]" role="alert"></p>
+          </div>
+
+          <button type="submit"
+                  class="w-full sm:w-auto rounded-full bg-paw px-6 py-3 font-bold text-white transition hover:bg-paw-dark hover:-translate-y-0.5">
+            Kirim Booking
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
