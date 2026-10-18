@@ -1,122 +1,98 @@
-/* ===== Booking Grooming — validasi ===== */
+$("#mp-book").addEventListener("click", () => {
+  $("#service").value = String(selectedPackageId);
+  closeModal(modalPaket);
+  $("#booking").scrollIntoView({ behavior: "smooth" });
+  $("#owner").focus({ preventScroll: true });
+});
 
-const BOOKING_MESSAGES = {
-  ownerName: {
-    empty: "Nama pemilik wajib diisi.",
-    short: "Nama pemilik minimal 2 huruf."
-  },
-  petType: { empty: "Pilih jenis hewan: kucing atau anjing." },
-  service: { empty: "Pilih salah satu paket grooming." },
-  bookingDate: {
-    empty: "Tanggal booking wajib diisi.",
-    past: "Tanggal tidak boleh di masa lalu. Pilih hari ini atau setelahnya."
-  }
+
+const form = $("#booking-form");
+const fields = {
+  owner: { input: $("#owner"), error: $("#err-owner") },
+  pet: { input: $("#pet"), error: $("#err-pet") },
+  service: { input: $("#service"), error: $("#err-service") },
+  date: { input: $("#date"), error: $("#err-date") }
 };
 
-// Tanggal lokal (bukan UTC) dalam format yyyy-mm-dd
-function toLocalISO(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+// Isi opsi layanan dari data paket
+for (const pkg of groomingPackages) {
+  const option = document.createElement("option");
+  option.value = String(pkg.id);
+  option.textContent = `${pkg.name} – ${formatRupiah(pkg.price)}`;
+  fields.service.input.appendChild(option);
 }
 
-// Fungsi murni: mengembalikan objek { field: pesan } — kosong berarti valid
-function validateBooking(data, todayISO) {
-  const errors = {};
-  const name = (data.ownerName || "").trim();
 
-  if (!name) errors.ownerName = BOOKING_MESSAGES.ownerName.empty;
-  else if (name.length < 2) errors.ownerName = BOOKING_MESSAGES.ownerName.short;
+function todayISO() {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now.toISOString().slice(0, 10);
+}
+fields.date.input.min = todayISO();
 
-  if (!data.petType) errors.petType = BOOKING_MESSAGES.petType.empty;
-  if (!data.service) errors.service = BOOKING_MESSAGES.service.empty;
-
-  if (!data.bookingDate) errors.bookingDate = BOOKING_MESSAGES.bookingDate.empty;
-  else if (data.bookingDate < todayISO) errors.bookingDate = BOOKING_MESSAGES.bookingDate.past;
-
-  return errors;
+function showError(name, message) {
+  const { input, error } = fields[name];
+  error.textContent = message;
+  input.setAttribute("aria-invalid", message ? "true" : "false");
+  if (message) input.setAttribute("aria-describedby", error.id);
+  else input.removeAttribute("aria-describedby");
 }
 
-function formatTanggal(iso) {
-  const [y, m, d] = iso.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("id-ID", {
-    day: "numeric", month: "long", year: "numeric"
+
+function validateField(name) {
+  const value = fields[name].input.value.trim();
+
+  if (name === "owner") {
+    if (value === "") return "Nama pemilik wajib diisi.";
+    if (value.length < 3) return "Nama pemilik minimal 3 huruf.";
+  }
+  if (name === "pet" && value === "") return "Pilih jenis hewan: kucing atau anjing.";
+  if (name === "service" && value === "") return "Pilih salah satu paket grooming.";
+  if (name === "date") {
+    if (value === "") return "Tanggal booking wajib diisi.";
+    if (value < todayISO()) return "Tanggal tidak boleh sebelum hari ini. Pilih hari ini atau setelahnya.";
+  }
+  return "";
+}
+
+
+for (const name of Object.keys(fields)) {
+  const { input } = fields[name];
+  const eventName = input.tagName === "SELECT" || input.type === "date" ? "change" : "input";
+  input.addEventListener(eventName, () => {
+    if (input.getAttribute("aria-invalid") === "true") showError(name, validateField(name));
+    $("#booking-success").classList.add("hidden");
   });
 }
 
-if (typeof document !== "undefined") {
-  const form = document.getElementById("booking-form");
-  const successBox = document.getElementById("booking-success");
-  const FIELDS = ["ownerName", "petType", "service", "bookingDate"];
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
 
-  const dateInput = document.getElementById("bookingDate");
-  dateInput.min = toLocalISO(new Date()); // tanggal lampau tidak bisa dipilih dari kalender
-
-  function showError(field, message) {
-    const input = document.getElementById(field);
-    document.getElementById("err-" + field).textContent = message || "";
-    input.classList.toggle("border-red-600", Boolean(message));
-    input.classList.toggle("border-peach", !message);
-    input.setAttribute("aria-invalid", message ? "true" : "false");
+  let firstInvalid = null;
+  for (const name of Object.keys(fields)) {
+    const message = validateField(name);
+    showError(name, message);
+    if (message && !firstInvalid) firstInvalid = fields[name].input;
   }
 
-  function clearErrors() {
-    FIELDS.forEach(f => showError(f, ""));
+  if (firstInvalid) {
+    firstInvalid.focus();
+    $("#booking-success").classList.add("hidden");
+    return;
   }
 
-  form.addEventListener("submit", event => {
-    event.preventDefault();
-
-    const data = {};
-    FIELDS.forEach(f => (data[f] = form.elements[f].value));
-
-    const errors = validateBooking(data, toLocalISO(new Date()));
-    clearErrors();
-    successBox.classList.add("hidden");
-
-    const firstInvalid = FIELDS.find(f => errors[f]);
-    if (firstInvalid) {
-      FIELDS.forEach(f => showError(f, errors[f]));
-      document.getElementById(firstInvalid).focus();
-      return;
-    }
-
-    successBox.innerHTML = `
-      <p class="font-heading font-semibold text-lg mb-2">Booking berhasil dikirim!</p>
-      <ul class="space-y-1">
-        <li><span class="font-semibold">Pemilik:</span> ${escapeHTML(data.ownerName.trim())}</li>
-        <li><span class="font-semibold">Hewan:</span> ${escapeHTML(data.petType)}</li>
-        <li><span class="font-semibold">Layanan:</span> ${escapeHTML(data.service)}</li>
-        <li><span class="font-semibold">Tanggal:</span> ${formatTanggal(data.bookingDate)}</li>
-      </ul>
-      <p class="mt-2 text-sm">Terima kasih! Tim PawCare akan menghubungi kamu untuk konfirmasi jadwal.</p>`;
-    successBox.classList.remove("hidden");
-    successBox.focus();
-
-    form.reset();
+  // Semua valid: tampilkan konfirmasi
+  const pkg = findPackage(Number(fields.service.input.value));
+  const dateText = new Date(fields.date.input.value + "T00:00:00").toLocaleDateString("id-ID", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric"
   });
 
-  // Error pada kolom hilang begitu pengguna memperbaikinya
-  FIELDS.forEach(f => {
-    const el = document.getElementById(f);
-    el.addEventListener(el.tagName === "SELECT" ? "change" : "input", () => showError(f, ""));
-  });
+  $("#booking-summary").textContent =
+    `Terima kasih, ${fields.owner.input.value.trim()}. ` +
+    `Booking ${pkg.name} (${formatRupiah(pkg.price)}) untuk ${fields.pet.input.value.toLowerCase()} Anda ` +
+    `dijadwalkan pada ${dateText}.`;
+  $("#booking-success").classList.remove("hidden");
 
-  // Dipanggil oleh tombol "Booking Sekarang" di modal paket (Orang 4)
-  window.bookService = function (packageName) {
-    document.getElementById("service").value = packageName;
-    showError("service", "");
-    successBox.classList.add("hidden");
-    document.getElementById("booking").scrollIntoView({ behavior: "smooth" });
-    document.getElementById("ownerName").focus({ preventScroll: true });
-  };
-}
-
-function escapeHTML(text) {
-  return String(text).replace(/[&<>"']/g, c => (
-    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
-  ));
-}
-
-if (typeof module !== "undefined") module.exports = { validateBooking, toLocalISO };
+  form.reset();
+  for (const name of Object.keys(fields)) showError(name, "");
+});
